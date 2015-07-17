@@ -16,9 +16,11 @@
 
 package org.ros.internal.message;
 
-import org.jboss.netty.buffer.ChannelBuffer;
+import io.netty.buffer.ByteBuf;
 import org.ros.internal.message.field.Field;
 import org.ros.message.MessageSerializer;
+
+import java.nio.ByteOrder;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
@@ -26,7 +28,8 @@ import org.ros.message.MessageSerializer;
 public class DefaultMessageSerializer implements MessageSerializer<Message> {
 
   @Override
-  public void serialize(Message message, ChannelBuffer buffer) {
+  public void serialize(Message message, ByteBuf buffer) {
+    buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
     for (Field field : message.toRawMessage().getFields()) {
       if (!field.isConstant()) {
         field.serialize(buffer);

@@ -16,29 +16,29 @@
 
 package org.ros.internal.message;
 
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.nio.ByteOrder;
 
 /**
- * Provides {@link ChannelBuffer}s for serializing and deserializing messages.
+ * Provides {@link ByteBuf}s for serializing and deserializing messages.
  * 
  * @author damonkohler@google.com (Damon Kohler)
  */
-public class MessageBuffers {
+public class ByteBufs {
 
   static final int ESTIMATED_LENGTH = 256;
 
-  private MessageBuffers() {
+  private ByteBufs() {
     // Utility class.
   }
 
   /**
-   * @return a new {@link ChannelBuffer} for {@link Message} serialization that
+   * @return a new {@link ByteBuf} for {@link Message} serialization that
    *         grows dynamically
    */
-  public static ChannelBuffer dynamicBuffer() {
-    return ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, ESTIMATED_LENGTH);
+  public static ByteBuf dynamicBuffer() {
+    return Unpooled.buffer(ESTIMATED_LENGTH).order(ByteOrder.LITTLE_ENDIAN);
   }
 }

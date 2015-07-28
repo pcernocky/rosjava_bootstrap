@@ -16,58 +16,54 @@
 
 package org.ros.internal.message.field;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import org.ros.exception.RosMessageRuntimeException;
 import org.ros.internal.message.context.MessageContext;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
  */
 public class MessageFields {
 
-  private final Map<String, Field> fields;
-  private final Map<String, Field> setters;
-  private final Map<String, Field> getters;
-  private final List<Field> orderedFields;
+  private final MessageContext messageContext;
+  private final List<Field> fields;
 
   public MessageFields(MessageContext messageContext) {
-    fields = Maps.newHashMap();
-    setters = Maps.newHashMap();
-    getters = Maps.newHashMap();
-    orderedFields = Lists.newArrayList();
-    for (String name : messageContext.getFieldNames()) {
-      Field field = messageContext.getFieldFactory(name).create();
-      fields.put(name, field);
-      getters.put(messageContext.getFieldGetterName(name), field);
-      setters.put(messageContext.getFieldSetterName(name), field);
-      orderedFields.add(field);
+    this.messageContext = messageContext;
+    List<String> fieldNames = messageContext.getFieldNames();
+    Field[] fieldsArr = new Field[fieldNames.size()];
+    for (int i = 0; i < fieldsArr.length; i++) {
+      String fieldName = fieldNames.get(i);
+      fieldsArr[i] = messageContext.getFieldFactory(fieldName).create();
     }
+    fields = Collections.unmodifiableList(Arrays.asList(fieldsArr));
   }
 
   public Field getField(String name) {
-    return fields.get(name);
+    return getField(messageContext.getFieldIndexByName(name));
   }
 
   public Field getSetterField(String name) {
-    return setters.get(name);
+    return getField(messageContext.getFieldIndexBySetterName(name));
   }
 
   public Field getGetterField(String name) {
-    return getters.get(name);
+    return getField(messageContext.getFieldIndexByGetterName(name));
+  }
+
+  private Field getField(Integer index) {
+    return index != null ? fields.get(index) : null;
   }
 
   public List<Field> getFields() {
-    return Collections.unmodifiableList(orderedFields);
+    return fields;
   }
 
   public Object getFieldValue(String name) {
-    Field field = fields.get(name);
+    Field field = getField(name);
     if (field != null) {
       return field.getValue();
     }
@@ -75,7 +71,7 @@ public class MessageFields {
   }
 
   public void setFieldValue(String name, Object value) {
-    Field field = fields.get(name);
+    Field field = getField(name);
     if (field != null) {
       field.setValue(value);
     } else {
@@ -85,32 +81,27 @@ public class MessageFields {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((fields == null) ? 0 : fields.hashCode());
-    result = prime * result + ((orderedFields == null) ? 0 : orderedFields.hashCode());
+    int result = messageContext.hashCode();
+    result = 31 * result + fields.hashCode();
     return result;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
-    if (obj == null)
+    }
+    if (!(o instanceof MessageFields)) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+
+    MessageFields that = (MessageFields) o;
+
+    if (!messageContext.equals(that.messageContext)) {
       return false;
-    MessageFields other = (MessageFields) obj;
-    if (fields == null) {
-      if (other.fields != null)
-        return false;
-    } else if (!fields.equals(other.fields))
-      return false;
-    if (orderedFields == null) {
-      if (other.orderedFields != null)
-        return false;
-    } else if (!orderedFields.equals(other.orderedFields))
-      return false;
-    return true;
+    }
+    return fields.equals(that.fields);
+
   }
+
 }

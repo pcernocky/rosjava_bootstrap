@@ -16,74 +16,78 @@
 
 package org.ros.internal.message;
 
+import io.netty.buffer.ByteBuf;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.exception.RosMessageRuntimeException;
 
 /**
- * A pool of {@link ChannelBuffer}s for serializing and deserializing messages.
+ * A pool of {@link ByteBuf}s for serializing and deserializing messages.
  * <p>
- * By contract, {@link ChannelBuffer}s provided by {@link #acquire()} must be
- * returned using {@link #release(ChannelBuffer)}.
+ * By contract, {@link ByteBuf}s provided by {@link #acquire()} must be
+ * returned using {@link #release(ByteBuf)}.
  * 
  * @author damonkohler@google.com (Damon Kohler)
  */
 public class MessageBufferPool {
 
-  private final ObjectPool<ChannelBuffer> pool;
+  private final ObjectPool<ByteBuf> pool;
 
   public MessageBufferPool() {
-    pool = new StackObjectPool<ChannelBuffer>(new PoolableObjectFactory<ChannelBuffer>() {
+    pool = new StackObjectPool<ByteBuf>(new PoolableObjectFactory<ByteBuf>() {
       @Override
-      public ChannelBuffer makeObject() throws Exception {
-        return MessageBuffers.dynamicBuffer();
+      public ByteBuf makeObject() throws Exception {
+        return ByteBufs.dynamicBuffer();
       }
 
       @Override
-      public void destroyObject(ChannelBuffer channelBuffer) throws Exception {
+      public void destroyObject(ByteBuf byteBuf) throws Exception {
       }
 
       @Override
-      public boolean validateObject(ChannelBuffer channelBuffer) {
+      public boolean validateObject(ByteBuf byteBuf) {
         return true;
       }
 
       @Override
-      public void activateObject(ChannelBuffer channelBuffer) throws Exception {
+      public void activateObject(ByteBuf byteBuf) throws Exception {
       }
 
       @Override
-      public void passivateObject(ChannelBuffer channelBuffer) throws Exception {
-        channelBuffer.clear();
+      public void passivateObject(ByteBuf byteBuf) throws Exception {
+        byteBuf.clear();
       }
     });
   }
 
   /**
-   * Acquired {@link ChannelBuffer}s must be returned using
-   * {@link #release(ChannelBuffer)}.
+   * Acquired {@link ByteBuf}s must be returned using
+   * {@link #release(ByteBuf)}.
    * 
-   * @return an unused {@link ChannelBuffer}
+   * @return an unused {@link ByteBuf}
    */
-  public ChannelBuffer acquire() {
+  public ByteBuf acquire() {
     try {
-      return pool.borrowObject();
+      // todo
+//      return pool.borrowObject();
+      return ByteBufs.dynamicBuffer();
     } catch (Exception e) {
       throw new RosMessageRuntimeException(e);
     }
   }
 
   /**
-   * Release a previously acquired {@link ChannelBuffer}.
+   * Release a previously acquired {@link ByteBuf}.
    * 
-   * @param channelBuffer
-   *          the {@link ChannelBuffer} to release
+   * @param byteBuf
+   *          the {@link ByteBuf} to release
    */
-  public void release(ChannelBuffer channelBuffer) {
+  public void release(ByteBuf byteBuf) {
     try {
-      pool.returnObject(channelBuffer);
+      // todo
+//      byteBuf.release();
+//      pool.returnObject(byteBuf);
     } catch (Exception e) {
       throw new RosMessageRuntimeException(e);
     }

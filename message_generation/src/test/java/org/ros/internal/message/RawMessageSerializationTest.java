@@ -16,17 +16,16 @@
 
 package org.ros.internal.message;
 
-import static org.junit.Assert.assertTrue;
-
 import com.google.common.collect.Lists;
-
-import org.jboss.netty.buffer.ChannelBuffer;
+import io.netty.buffer.ByteBuf;
 import org.junit.Before;
 import org.junit.Test;
 import org.ros.internal.message.topic.TopicDefinitionResourceProvider;
 import org.ros.message.Duration;
 import org.ros.message.MessageFactory;
 import org.ros.message.Time;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
@@ -44,7 +43,7 @@ public class RawMessageSerializationTest {
   }
 
   private void checkSerializeAndDeserialize(Message message) {
-    ChannelBuffer buffer = MessageBuffers.dynamicBuffer();
+    ByteBuf buffer = ByteBufs.dynamicBuffer();
     DefaultMessageSerializer serializer = new DefaultMessageSerializer();
     serializer.serialize(message, buffer);
     DefaultMessageDeserializer<RawMessage> deserializer =
@@ -242,12 +241,12 @@ public class RawMessageSerializationTest {
   }
 
   @Test
-  public void testChannelBuffer() {
+  public void testByteBuf() {
     topicDefinitionResourceProvider.add("foo/foo", "uint8[] data");
-    ChannelBuffer buffer = MessageBuffers.dynamicBuffer();
+    ByteBuf buffer = ByteBufs.dynamicBuffer();
     buffer.writeBytes(new byte[] { 1, 2, 3, 4, 5 });
     RawMessage rawMessage = messageFactory.newFromType("foo/foo");
-    rawMessage.setChannelBuffer("data", buffer);
+    rawMessage.setByteBuf("data", buffer);
     checkSerializeAndDeserialize(rawMessage);
   }
 

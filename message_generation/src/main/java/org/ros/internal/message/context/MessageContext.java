@@ -44,6 +44,10 @@ public class MessageContext {
   private final Map<String, String> fieldSetterNames;
   private final List<String> fieldNames;
 
+  private final Map<String, Integer> fieldIndexes;
+  private final Map<String, Integer> fieldGetterIndexes;
+  private final Map<String, Integer> fieldSetterIndexes;
+
   public MessageContext(MessageDeclaration messageDeclaration, MessageFactory messageFactory) {
     this.messageDeclaration = messageDeclaration;
     this.messageFactory = messageFactory;
@@ -51,6 +55,9 @@ public class MessageContext {
     this.fieldGetterNames = Maps.newHashMap();
     this.fieldSetterNames = Maps.newHashMap();
     this.fieldNames = Lists.newArrayList();
+    this.fieldIndexes = Maps.newHashMap();
+    this.fieldGetterIndexes = Maps.newHashMap();
+    this.fieldSetterIndexes = Maps.newHashMap();
   }
 
   public MessageFactory getMessageFactory() {
@@ -79,9 +86,16 @@ public class MessageContext {
 
   public void addFieldFactory(String name, FieldFactory fieldFactory) {
     fieldFactories.put(name, fieldFactory);
-    fieldGetterNames.put(name, "get" + getJavaName(name));
-    fieldSetterNames.put(name, "set" + getJavaName(name));
+    String javaName = getJavaName(name);
+    String getter = "get" + javaName;
+    String setter = "set" + javaName;
+    fieldGetterNames.put(name, getter);
+    fieldSetterNames.put(name, setter);
     fieldNames.add(name);
+    int index = fieldIndexes.size();
+    fieldIndexes.put(name, index);
+    fieldGetterIndexes.put(getter, index);
+    fieldSetterIndexes.put(setter, index);
   }
 
   private String getJavaName(String name) {
@@ -108,6 +122,18 @@ public class MessageContext {
 
   public FieldFactory getFieldFactory(String name) {
     return fieldFactories.get(name);
+  }
+
+  public Integer getFieldIndexByName(String name) {
+    return fieldIndexes.get(name);
+  }
+
+  public Integer getFieldIndexByGetterName(String name) {
+    return fieldGetterIndexes.get(name);
+  }
+
+  public Integer getFieldIndexBySetterName(String name) {
+    return fieldSetterIndexes.get(name);
   }
 
   /**
@@ -141,4 +167,5 @@ public class MessageContext {
       return false;
     return true;
   }
+
 }
